@@ -12,6 +12,7 @@ import argparse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import os
+import csv
 from config import DEVELOPER_KEY
 
 # Set DEVELOPER_KEY to the API key value from the APIs & auth > Registered apps
@@ -59,14 +60,41 @@ def youtube_search(q, max_results=25, order="relevance", token=None, location=No
     return videos
 
 
-if __name__ == '__main__':
-
+def fill_music(download_last):
     try:
-        videos = youtube_search(q='Britney Spears Criminal')
-        first_result = videos[0].split('(')[-1][:-1]
-        print(first_result)
 
-        os.system(f"youtube-dl -o 'music/%(title)s.%(ext)s' -x --audio-format mp3 {first_result}")
+        with open("shazamlibrary.csv", encoding='utf-8') as r_file:
+            # Создаем объект reader, указываем символ-разделитель ","
+            file_reader = csv.reader(r_file, delimiter=",")
+            # Счетчик для подсчета количества строк и вывода заголовков столбцов
+            count = 0
+            # Считывание данных из CSV файла
+            music = []
+            for row in file_reader:
+                if count == 0:
+                    pass
+                elif count == 1:
+                    pass
+                    # print(f'Файл содержит столбцы: {", ".join(row)}')
+                else:
+                    # Вывод строк
+                    print(f' {count - 1}   {row[2]} - {row[3]}')
+                    music.append([row[2], row[3]])
+                count += 1
+            print(f'Всего в файле {count - 1} строк.')
+
+        for song in range(download_last):
+
+            videos = youtube_search(q=' '.join(music[song]), max_results=1)
+            first_result = videos[0].split('(')[-1][:-1]
+            print(videos[0])
+            # print(first_result)
+            os.system(f"youtube-dl -o 'music/%(title)s.%(ext)s' -x --audio-format mp3 {first_result}")
 
     except HttpError as e:
         print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
+
+
+if __name__ == '__main__':
+    fill_music(2)
+
